@@ -1,0 +1,23 @@
+{
+  "name": "apiaise",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": "./bin/server.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: test specified\" && exit 1",
+    "start": "nodemon ./bin/server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "moment": "^2.23.0",
+    "moment-timezone": "^0.5.23",
+    "node-cron": "^2.0.3",
+    "pg": "^7.5.0",
+    "request": "^2.88.0"
+  }
+}
