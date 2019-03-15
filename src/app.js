@@ -13,7 +13,7 @@ var bodyParser = require('body-parser');
 // moment().format();
 // moment.locale('pt-BR');
 var moment = require('moment-timezone');
-moment().tz('Asia/Tokyo').format();
+//moment().tz('Asia/Tokyo').format();
 moment.locale('pt-BR');
 
 

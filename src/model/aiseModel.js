@@ -17,8 +17,7 @@ function consultaAise(req, callback) {
   connect();
   function connect() {
     var pg = require('pg');
-    const connectionString = process.env.DATABASE_URL || req.body.config_aise;
-    console.log(req.body.config_aise);
+    const connectionString = process.env.DATABASE_URL || global.aise;
     client = new pg.Client(connectionString);
     client.connect(function (error, client) {
       if (error) {
@@ -68,16 +67,15 @@ function consultaAise(req, callback) {
   }
 }
 function consultaRequisicao(req, callback) {
-  config_aise = req;
   connect();
   function connect() {
     var pg = require('pg');
-    const connectionString = process.env.DATABASE_URL || config_aise;
+    const connectionString = process.env.DATABASE_URL || req.body.config_aise;
     client = new pg.Client(connectionString);
     client.connect(function (error, client) {
       if (error) {
         console.log('Problema ao conectar ao Postgres. Verifique!', error);
-        //callback(error, false);
+        callback(error, false);
         return;
       } else {
         console.log('Conectado ao Postgres');
@@ -100,7 +98,6 @@ function consultaRequisicao(req, callback) {
           } else {
 
             if (result.rowCount > 0) {
-
 
               // for (let i = 0, p = Promise.resolve(justificativa); i < result.rowCount; i++) {//i < req.lentght
               //   p = p.then(_ => new Promise(resolve => {
@@ -186,8 +183,8 @@ function consultaRequisicao(req, callback) {
                          * Obs. Trocar essa requisicao feita ao  ponto gestor por um arquivo js.
                          */
 
-                          var request = require('request'), default_headers, url = 'http://api.961500-156727877.reviews.pontogestor.com/v1/funcionarios/' + consulta;
-                          default_headers = { 'X-Auth-Token': 'kDQ_K5h_74aB3FWxy2eS', 'Content-type': 'application/json', 'Accept': 'application/json' };
+                          var request = require('request'), default_headers, url = global.url_gestor + '/v1/funcionarios/' + consulta;
+                          default_headers = { 'X-Auth-Token': global.token, 'Content-type': 'application/json', 'Accept': 'application/json' };
                           request({
                             url: url,
                             headers: default_headers,
@@ -198,24 +195,27 @@ function consultaRequisicao(req, callback) {
                              */
                             if (error) {
                               console.log("Ocorreu um erro ao comunicar-se com o Ponto Gestor!" + error);
+                              callback("Ocorreu um erro ao comunicar-se com o Ponto Gestor!" + error, null);
                               return;
                               //callback("Ocorreu um erro ao comunicar-se com o Ponto Gestor!" + error, null, null);
                             }
                             if (!error && res.statusCode == 401) {
                               console.log("Erro ao conectar-se ao Ponto Gestor:" + res.statusMessage);
+                              callback("Erro ao conectar-se ao Ponto Gestor:" + res.statusMessage, null, null);
                               return;
                               //callback("Erro ao conectar-se ao Ponto Gestor!<br> Código de erro: " + res.statusCode + " - " + res.statusMessage, null, null);
                             } else if (!error && res.statusCode == 200) {
                               console.log("Resultado da consulta:" + res.statusCode);
                               parametros2 = JSON.parse(body);
+                              console.log(parametros2);
                               /**
                                * Consulta se o funcionário tem quadro de hora cadastrado
                                * [0] para pegar o primeiro retorno ; sempre será apenas um retorno
                                */
                               //var consulta = "aedd148a-5a25-4f87-ba05-b46779423bbd"//parametros2[0].uid;
                               var consulta = parametros2[0].uid;
-                              var request = require('request'), default_headers, url = 'http://api.961500-156727877.reviews.pontogestor.com/v1/funcionarios/' + consulta + '/quadros_de_horas';
-                              default_headers = { 'X-Auth-Token': 'kDQ_K5h_74aB3FWxy2eS', 'Content-type': 'application/json', 'Accept': 'application/json' };
+                              var request = require('request'), default_headers, url = url = global.url_gestor + '/v1/funcionarios/' + consulta + '/quadros_de_horas';
+                              default_headers = { 'X-Auth-Token': global.token, 'Content-type': 'application/json', 'Accept': 'application/json' };
                               request({
                                 url: url,
                                 headers: default_headers,
@@ -238,6 +238,7 @@ function consultaRequisicao(req, callback) {
                                    * Verifica se o quadro de horas que esta no ponto Gestor é o mesmo que esta no aise;
                                    * Caso nao seja o mesmo, ele vai alterar no ponto gestor para o que esta no AISE
                                    *  */
+
                                   if (body != "[]") {
 
                                     parametros3 = new Array();
@@ -263,6 +264,7 @@ function consultaRequisicao(req, callback) {
                                     console.log('voltou do quadro de horas');
                                     //aguarda verificar, excluir e inserir se necessário as justificativa do dia
                                     await funcaoJustificativa();
+                                    callback(null,"Deu Certo");
                                     console.log('Voltou das justificativa');
 
 
@@ -284,9 +286,9 @@ function consultaRequisicao(req, callback) {
                                             var converte = moment.utc(i).toDate();
                                             var data_justificativa = moment(converte).local().format('YYYY-MM-DD');
                                             //console.log(parametros2[0].uid);
-                                            req = '{"cartao_ponto_justificativa":{"data":"' + data_justificativa + '","hora":"","motivo_id":"' + parametros.motivo + '"}}';
-                                            var request = require('request'), default_headers, url = 'http://api.961500-156727877.reviews.pontogestor.com/v1/funcionarios/' + parametros2[0].uid + '/cartao_ponto/' + parametros.ano + '/' + parametros.mes + '/justificativas';
-                                            default_headers = { 'X-Auth-Token': 'kDQ_K5h_74aB3FWxy2eS', 'Content-type': 'application/json', 'Accept': 'application/json' };
+                                            req = '{"cartao_ponto_justificativa":{"data":"' + data_justificativa + '","hora":"0","motivo_id":"' + parametros.motivo + '"}}';
+                                            var request = require('request'), default_headers, url = global.url_gestor + '/v1/funcionarios/' + parametros2[0].uid + '/cartao_ponto/' + parametros.ano + '/' + parametros.mes + '/justificativas';
+                                            default_headers = { 'X-Auth-Token': global.token, 'Content-type': 'application/json', 'Accept': 'application/json' };
                                             request({
                                               url: url,
                                               headers: default_headers,
@@ -295,7 +297,7 @@ function consultaRequisicao(req, callback) {
                                             }, function (error, res, body) {
                                               if (error) {
                                                 console.log(error);
-                                                return;
+                                                callback(erro,null);
                                               } else {
                                                 console.log(body + res.statusMessage);
                                                 if (res.statusCode == 201 | res.statusCode == 200) {
@@ -310,7 +312,7 @@ function consultaRequisicao(req, callback) {
                                                   client.query(sql_atualiza, function (error, result) {
                                                     if (error) {
                                                       console.error('Erro ao atualzar status da matricula:' + parametros.matricula + '', error);
-                                                      return;
+                                                      callback(erro,null);
                                                     };
                                                   });
                                                   resolve();
@@ -348,8 +350,8 @@ function consultaRequisicao(req, callback) {
                                         var converte = moment.utc(parametros.data_inicial).toDate();
                                         var data_vigencia = moment(converte).local().format('YYYY-MM-DD');
                                         req = '{"funcionario_quadro_de_hora":{"data_vigencia":"' + data_vigencia + '","ch":"' + parametros.horariotrabalho + '"}}';
-                                        var request = require('request'), default_headers, url = 'http://api.961500-156727877.reviews.pontogestor.com/v1/funcionarios/' + consulta + '/quadros_de_horas';
-                                        default_headers = { 'X-Auth-Token': 'kDQ_K5h_74aB3FWxy2eS', 'Content-type': 'application/json', 'Accept': 'application/json' };
+                                        var request = require('request'), default_headers, url = global.url_gestor + '/v1/funcionarios/' + consulta + '/quadros_de_horas';
+                                        default_headers = { 'X-Auth-Token': global.token, 'Content-type': 'application/json', 'Accept': 'application/json' };
                                         request({
                                           url: url,
                                           headers: default_headers,
@@ -476,6 +478,7 @@ function consultaRequisicao(req, callback) {
             } else {
               console.log("fechou a conexao");
               client.end();
+              callback(null,"Justificativas já inseridas");
             }
             //console.log(global.ultimo_enviado);
             //client.end();

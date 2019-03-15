@@ -2,7 +2,6 @@
  * @author <marcus@publitechsistemas.com.br>
  */
 require('dotenv-safe').load();
-var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 module.exports.mongoose = mongoose;
 module.exports.Schema = Schema;
@@ -13,7 +12,7 @@ connect();
 function connect() {
    //var url = 'mongodb://localhost:32765/ponto';
    //console.log(process.env.MONGO_CONNECTION);
-   mongoose.connect(global.mongo_local,function(error, client) {
+   mongoose.connect(global.mongo_local, {userNewUrlParser: true}, function(error, client) {
     if(error) {
          console.log('Problema ao conectar ao Mongodb. Verifique!',error);
     }else {

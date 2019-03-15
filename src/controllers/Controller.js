@@ -1,10 +1,21 @@
 /**
  * @author <marcus@publitechsistemas.com.br>
  */
-exports.get = (req, callback) => {
 
+ exports.funcionarios = (req,callback) => {
     AiseModel = require('../model/aiseModel.js');
-    //console.log(req);
+    AiseModel.consultaAise(req, function (error, result) {
+        if (error) {
+            callback(error, null);
+            return;
+        } else {
+            callback(null, result);
+        };
+    });
+    
+};
+exports.get = (req, callback) => {
+    AiseModel = require('../model/aiseModel.js');
     /**
      * Configuração Local do Aise, especifica para cada entidade, configurada manualmente aqui na API.
      */
@@ -12,19 +23,34 @@ exports.get = (req, callback) => {
     //callback("erro", "Deu certo");
     //return;
 
-    AiseModel.consultaAise(req, function (error, result) {
+    AiseModel.consultaRequisicao(req, function (error, result) {
         if (error) {
             callback(error, null);
-            return;
+            //return;
         } else {
-            callback(null, result);
+            console.log("nao podia entrar aki");
+            callback(null, result);   
         }
+        //return;
     });
-
 };
+
 exports.post = (function (req, callback) {
     global.method = 'POST';
 
+    //req = 'postgres://aise@192.168.20.71:32768/cmpg';
+    AiseModel.consultaRequisicao(req, function (error, result) {
+        if (error) {
+            console.log(error);
+            //callback(error, null);
+            return;
+        } else {
+            console.log('teste de saida do quadro de horas');
+            //callback(null, result);
+        }
+    });
+
+return;
     // const internalIp = require('internal-ip');
     // internalIp.v4().then(ip => {
     //     console.log(ip);
